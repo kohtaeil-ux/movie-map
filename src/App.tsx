@@ -131,6 +131,8 @@ export default function App() {
       disableDefaultUI: true,
     });
 
+    setMapInstance(map); // 👈 이 코드를 추가하여 지도 인스턴스를 저장해 줍니다!
+
     fetch(SHEET_CSV_URL)
       .then((res) => res.text())
       .then((csvText) => {
