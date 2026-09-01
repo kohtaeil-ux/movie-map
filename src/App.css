@@ -318,8 +318,8 @@ body, html, #root {
 /* 우측 지도 버튼과 겹침 방지 강제 적용 */
 .top-search-bar {
   position: absolute !important;
-  top: 14px !important;
+  top: 16px !important;
   left: 14px !important;
-  right: 80px !important; /* 우측 버튼 공간 확보 */
+  right: 85px !important; /* 우측 구글 지도 버튼 공간 확보 */
   z-index: 999 !important;
 }
