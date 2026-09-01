@@ -22,9 +22,9 @@ body, html, #root {
 /* 상단 검색바 모바일 최적화 (지도 버튼과 겹침 방지) */
 .top-search-bar {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
+  top: 14px;        /* 상단에서 살짝 더 여유 있게 내림 */
+  left: 14px;
+  right: 75px;      /* 우측 지도/위성 버튼들이 차지하는 공간(약 75px)만큼 미리 비워둠 */
   z-index: 10;
   display: flex;
   gap: 8px;
