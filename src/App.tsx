@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-declare const window: any;
+declare const L: any; // Leaflet 전역 객체 선언
 
 interface LocationItem {
   MovieTitle: string;
@@ -122,16 +122,27 @@ export default function App() {
     return result;
   };
 
+  // Leaflet 지도 초기화
   useEffect(() => {
-    if (!mapRef.current || !window.google) return;
+    if (!mapRef.current || !window.L) return;
 
-    const map = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 36.5, lng: 127.5 },
+    // 만약 이미 지도 인스턴스가 존재한다면 중복 초기화를 막기 위해 제거
+    if (mapRef.current._leaflet_id) {
+      mapRef.current._leaflet_id = null;
+    }
+
+    const map = L.map(mapRef.current, {
+      center: [36.5, 127.5],
       zoom: 7,
-      disableDefaultUI: true,
+      zoomControl: false,
     });
 
-    setMapInstance(map); // 👈 이 코드를 추가하여 지도 인스턴스를 저장해 줍니다!
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    setMapInstance(map);
 
     fetch(SHEET_CSV_URL)
       .then((res) => res.text())
@@ -142,6 +153,11 @@ export default function App() {
       .catch((err) => {
         console.error('데이터 로드 실패:', err);
       });
+
+    // 컴포넌트가 언마운트될 때 지도 안전하게 정리
+    return () => {
+      map.remove();
+    };
   }, []);
 
   const toggleLike = (key: string) => {
@@ -180,12 +196,14 @@ export default function App() {
     });
   };
 
+  // 마커 렌더링 및 검색/필터 연동
   useEffect(() => {
     if (!mapInstance || allData.length === 0) return;
 
-    markers.forEach((m) => m.setMap(null));
+    // 기존 마커 제거
+    markers.forEach((m) => m.remove());
     const newMarkers: any[] = [];
-    let firstMatchPosition = null;
+    let firstMatchLatLng = null;
 
     const query = searchTerm.toLowerCase();
 
@@ -199,21 +217,18 @@ export default function App() {
       if (searchTerm && !matchesSearch) return;
       if (selectedMovie && !matchesSelectedMovie) return;
 
-      const position = { lat: item.lat, lng: item.lng };
+      const latLng = [item.lat, item.lng];
 
-      if (!firstMatchPosition) {
-        firstMatchPosition = position;
+      if (!firstMatchLatLng) {
+        firstMatchLatLng = latLng;
       }
 
-      const marker = new window.google.maps.Marker({
-        position,
-        map: mapInstance,
-        title: item.LocationName,
-      });
+      const marker = L.marker(latLng).addTo(mapInstance);
+marker.bindTooltip(item.LocationName, { direction: 'top', offset: [0, -20] }); // ✅ 수정 완료
 
-      marker.addListener('click', () => {
+      marker.on('click', () => {
         setActivePopupItem(item);
-        mapInstance.panTo(position);
+        mapInstance.panTo(latLng);
       });
 
       newMarkers.push(marker);
@@ -221,12 +236,10 @@ export default function App() {
 
     setMarkers(newMarkers);
 
-    if ((searchTerm || selectedMovie) && firstMatchPosition) {
-      mapInstance.setCenter(firstMatchPosition);
-      mapInstance.setZoom(12);
+    if ((searchTerm || selectedMovie) && firstMatchLatLng) {
+      mapInstance.setView(firstMatchLatLng, 12);
     } else if (!searchTerm && !selectedMovie && allData.length > 0) {
-      mapInstance.setCenter({ lat: allData[0].lat, lng: allData[0].lng });
-      mapInstance.setZoom(7);
+      mapInstance.setView([allData[0].lat, allData[0].lng], 7);
     }
   }, [searchTerm, selectedMovie, allData, mapInstance]);
 
@@ -238,32 +251,21 @@ export default function App() {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const pos = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
+        const latLng = [position.coords.latitude, position.coords.longitude];
 
-        mapInstance.setCenter(pos);
-        mapInstance.setZoom(14);
+        mapInstance.setView(latLng, 14);
 
         if (myLocationMarker) {
-          myLocationMarker.setMap(null);
+          myLocationMarker.remove();
         }
 
-        const marker = new window.google.maps.Marker({
-          position: pos,
-          map: mapInstance,
-          title: '내 위치',
-          icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 8,
-            fillColor: '#4285F4',
-            fillOpacity: 1,
-            strokeColor: '#ffffff',
-            strokeWeight: 2,
-          },
+        const customIcon = L.divIcon({
+          className: 'custom-user-marker',
+          html: '<div style="background:#4285F4; width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow:0 0 6px rgba(0,0,0,0.3);"></div>',
+          iconSize: [16, 16],
         });
 
+        const marker = L.marker(latLng, { icon: customIcon }).addTo(mapInstance);
         setMyLocationMarker(marker);
       },
       () => {
@@ -276,8 +278,7 @@ export default function App() {
     setIsDrawerOpen(false);
     setActivePopupItem(item);
     if (mapInstance) {
-      mapInstance.setCenter({ lat: item.lat, lng: item.lng });
-      mapInstance.setZoom(14);
+      mapInstance.setView([item.lat, item.lng], 14);
     }
   };
 
@@ -307,12 +308,12 @@ export default function App() {
       {/* 상단 검색바 & 버튼 영역 */}
       <div style={{
         position: 'absolute',
-        top: '55px',        // 👈 기존 '15px'에서 아래로 넉넉하게 내려서 지도 버튼과 분리합니다!
-        left: '15px',       // 👈 좌측 여백도 자연스럽게 맞춥니다
-        zIndex: 10,
+        top: '55px',
+        left: '15px',
+        zIndex: 1000, // Leaflet 기본 레이어보다 위로 오도록 z-index 상향
         display: 'flex',
         gap: '8px',
-        width: 'calc(100% - 90px)', // 👈 우측 지도/위성 버튼 영역(약 90px)만큼 너비를 줄여서 절대 안 겹치게 방어합니다!
+        width: 'calc(100% - 90px)',
         maxWidth: '320px',
         boxSizing: 'border-box'
       }}>
@@ -417,7 +418,7 @@ export default function App() {
           top: '75px',
           left: '50%',
           transform: 'translateX(-50%)',
-          zIndex: 20,
+          zIndex: 1000,
           background: 'white',
           borderRadius: '12px',
           boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
@@ -515,7 +516,7 @@ export default function App() {
           width: '100%',
           height: '100%',
           background: 'rgba(0,0,0,0.5)',
-          zIndex: 30,
+          zIndex: 2000,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -669,7 +670,7 @@ export default function App() {
         bottom: '65px',
         left: '0',
         right: '0',
-        zIndex: 10,
+        zIndex: 1000,
         display: 'flex',
         gap: '10px',
         overflowX: 'auto',
@@ -791,7 +792,7 @@ export default function App() {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 25,
+          zIndex: 1000,
           boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
         }}
       />
