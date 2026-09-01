@@ -128,18 +128,8 @@ export default function App() {
     const map = new window.google.maps.Map(mapRef.current, {
       center: { lat: 36.5, lng: 127.5 },
       zoom: 7,
-      disableDefaultUI: false,
-      // 지도/위성 전환 버튼 및 줌 버튼이 검색바와 겹치지 않도록 위치 및 여백 조정
-      mapTypeControl: true,
-      mapTypeControlOptions: {
-        position: window.google.maps.ControlPosition.TOP_LEFT,
-      },
-      zoomControl: true,
-      zoomControlOptions: {
-        position: window.google.maps.ControlPosition.RIGHT_TOP,
-      },
+      disableDefaultUI: true,
     });
-    setMapInstance(map);
 
     fetch(SHEET_CSV_URL)
       .then((res) => res.text())
