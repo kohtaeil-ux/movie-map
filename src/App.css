@@ -19,22 +19,7 @@ body, html, #root {
   position: relative;
 }
 
-/* 상단 검색바 모바일 최적화 (지도 버튼과 겹침 방지) */
-.top-search-bar {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  z-index: 10;
-  display: flex;
-  gap: 8px;
-  pointer-events: none; /* 배경 클릭 통과 */
-}
-
-.search-input-box, .mypage-btn {
-  pointer-events: auto; /* 터치 활성화 */
-}
-
+/* 상단 검색바 공통 박스 디자인 */
 .search-input-box {
   flex: 1;
   background: white;
@@ -43,103 +28,32 @@ body, html, #root {
   display: flex;
   align-items: center;
   padding: 0 14px;
-  height: 44px;
+  height: 42px;
 }
 
 .search-input-box input {
   width: 100%;
   border: none;
   outline: none;
-  font-size: 14px;
+  font-size: 13px;
   background: transparent;
   margin-left: 6px;
-}
-
-.mypage-btn {
-  background: white;
-  border: none;
-  border-radius: 24px;
-  padding: 0 14px;
-  font-weight: bold;
-  font-size: 13px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  cursor: pointer;
-  white-space: nowrap;
-  height: 44px;
-  color: #333;
 }
 
 /* 지도 영역 */
 .map-view-container {
   flex: 1;
   width: 100%;
-  height: 100%; /* 이 줄을 꼭 넣어주세요! */
+  height: 100%;
   position: relative;
-  padding-bottom: 150px; 
 }
 
 .google-map {
   width: 100%;
-  height: 100%; /* 지도가 전체 공간을 채우도록 설정 */
+  height: 100%;
   position: absolute;
   top: 0;
   left: 0;
-}
-
-/* 하단 포스터 캐러셀 */
-.bottom-carousel {
-  position: absolute;
-  bottom: 60px; /* 광고 영역 바로 위 */
-  left: 0;
-  right: 0;
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 10px 14px;
-  z-index: 10;
-  scrollbar-width: none;
-}
-
-.bottom-carousel::-webkit-scrollbar {
-  display: none;
-}
-
-.carousel-card {
-  flex: 0 0 110px;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.carousel-card:active {
-  transform: scale(0.95);
-}
-
-.carousel-card img {
-  width: 100%;
-  height: 90px;
-  object-fit: cover;
-}
-
-.card-info {
-  padding: 6px;
-}
-
-.movie-tag {
-  font-size: 10px;
-  color: #e50914;
-  font-weight: bold;
-}
-
-.card-info h4 {
-  font-size: 11px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #333;
 }
 
 /* 하단 고정 카카오 애드핏 광고 영역 */
@@ -148,169 +62,17 @@ body, html, #root {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 50px;
+  height: 55px;
   background: #ffffff;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 20;
-  border-top: 1px solid #eee;
+  z-index: 25;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 }
 
-/* 모달창 스타일 */
-.modal-backdrop {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-  padding: 20px;
-}
-
-.modal-content {
-  background: white;
-  width: 100%;
-  max-width: 360px;
-  border-radius: 16px;
-  padding: 20px;
-  position: relative;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-}
-
-.close-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.modal-content img {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-
-.modal-movie {
-  font-size: 11px;
-  color: #e50914;
-  font-weight: bold;
-}
-
-.modal-content h3 {
-  font-size: 16px;
-  margin: 4px 0 8px 0;
-}
-
-.modal-address {
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.modal-desc {
-  font-size: 13px;
-  color: #444;
-  line-height: 1.4;
-  margin-bottom: 16px;
-}
-
-.modal-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.checkin-btn, .youtube-btn {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  text-align: center;
-  font-size: 13px;
-  text-decoration: none;
-}
-
-.checkin-btn {
-  background: #f0f0f0;
-  color: #333;
-}
-
-.checkin-btn.checked {
-  background: #e6f4ea;
-  color: #137333;
-}
-
-.youtube-btn {
-  background: #ff0000;
-  color: white;
-}
-
-/* 마이페이지 */
-.mypage-container {
-  flex: 1;
-  padding: 70px 20px 20px 20px;
-  overflow-y: auto;
-  background: #f9f9f9;
-}
-
-.stamp-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 15px;
-}
-
-.stamp-item {
-  display: flex;
-  background: white;
-  padding: 10px;
-  border-radius: 12px;
-  gap: 12px;
-  align-items: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.stamp-item img {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-/* ==========================================
-   모바일 화면 최적화 전용 CSS (겹침 현상 해결)
-   ========================================== */
-
-/* 1. 상단 검색바와 지도 버튼 겹침 방지 */
-.search-container, .top-search-bar, input[type="text"] {
-  max-width: calc(100% - 100px) !important; /* 우측 상단 지도/위성 버튼 공간 확보 */
-  z-index: 10 !important;
-}
-
-/* 2. 하단 포스터와 카카오 애드핏 광고 겹침 방지 */
-/* 하단에 포스터나 카드 목록이 있는 영역이 있다면 아래와 같이 여백을 확보해 줍니다 */
-.bottom-carousel, .card-list-container {
-  padding-bottom: 60px !important; 
-}
-
-/* 3. 카카오 애드핏 광고 영역을 화면 최하단에 안전하게 고정 */
-.adfit-banner-container, ins.kakao_ad_area {
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  z-index: 9999 !important;
-  background: #ffffff !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+/* 모바일 화면 최적화 보조 스타일 */
+ins.kakao_ad_area {
+  display: block !important;
+  margin: 0 auto;
 }

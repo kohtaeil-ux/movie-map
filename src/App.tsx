@@ -128,18 +128,8 @@ export default function App() {
     const map = new window.google.maps.Map(mapRef.current, {
       center: { lat: 36.5, lng: 127.5 },
       zoom: 7,
-      disableDefaultUI: false,
-      // 지도/위성 전환 버튼 및 줌 버튼이 검색바와 겹치지 않도록 위치 및 여백 조정
-      mapTypeControl: true,
-      mapTypeControlOptions: {
-        position: window.google.maps.ControlPosition.TOP_LEFT,
-      },
-      zoomControl: true,
-      zoomControlOptions: {
-        position: window.google.maps.ControlPosition.RIGHT_TOP,
-      },
+      disableDefaultUI: true,
     });
-    setMapInstance(map);
 
     fetch(SHEET_CSV_URL)
       .then((res) => res.text())
@@ -315,13 +305,12 @@ export default function App() {
       {/* 상단 검색바 & 버튼 영역 */}
       <div style={{
         position: 'absolute',
-        top: '15px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+        top: '55px',        // 👈 기존 '15px'에서 아래로 넉넉하게 내려서 지도 버튼과 분리합니다!
+        left: '15px',       // 👈 좌측 여백도 자연스럽게 맞춥니다
         zIndex: 10,
         display: 'flex',
         gap: '8px',
-        width: '92%',
+        width: 'calc(100% - 90px)', // 👈 우측 지도/위성 버튼 영역(약 90px)만큼 너비를 줄여서 절대 안 겹치게 방어합니다!
         maxWidth: '320px',
         boxSizing: 'border-box'
       }}>
