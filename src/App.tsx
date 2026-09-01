@@ -21,6 +21,7 @@ interface UserRecord {
 
 export default function App() {
   const mapRef = useRef<HTMLDivElement>(null);
+  const adRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<any>(null);
   const [allData, setAllData] = useState<LocationItem[]>([]);
   const [markers, setMarkers] = useState<any[]>([]);
@@ -51,6 +52,27 @@ export default function App() {
       console.error('저장 실패:', e);
     }
   }, [userRecords]);
+
+  // 카카오 애드핏 스크립트 동적 로드
+  useEffect(() => {
+    if (!adRef.current) return;
+    if (adRef.current.querySelector('ins')) return;
+
+    const ins = document.createElement('ins');
+    ins.className = 'kakao_ad_area';
+    ins.style.display = 'block';
+    ins.setAttribute('data-ad-unit', 'DAN-mhLeRLPzRhfWLipn');
+    ins.setAttribute('data-ad-width', '320');
+    ins.setAttribute('data-ad-height', '50');
+
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = '//t1.kakaocdn.net/kas/static/ba.min.js';
+    script.async = true;
+
+    adRef.current.appendChild(ins);
+    adRef.current.appendChild(script);
+  }, []);
 
   const parseCSVLine = (textLine: string) => {
     const result = [];
@@ -107,6 +129,15 @@ export default function App() {
       center: { lat: 36.5, lng: 127.5 },
       zoom: 7,
       disableDefaultUI: false,
+      // 지도/위성 전환 버튼 및 줌 버튼이 검색바와 겹치지 않도록 위치 및 여백 조정
+      mapTypeControl: true,
+      mapTypeControlOptions: {
+        position: window.google.maps.ControlPosition.TOP_LEFT,
+      },
+      zoomControl: true,
+      zoomControlOptions: {
+        position: window.google.maps.ControlPosition.RIGHT_TOP,
+      },
     });
     setMapInstance(map);
 
@@ -269,7 +300,6 @@ export default function App() {
   const activeRecordKey = activePopupItem ? `${activePopupItem.MovieTitle}_${activePopupItem.LocationName}` : '';
   const activeRecord = userRecords[activeRecordKey] || { isLiked: false, visitHistory: [] };
 
-  // 마이페이지 필터링 데이터
   const likedItems = allData.filter((item) => {
     const key = `${item.MovieTitle}_${item.LocationName}`;
     return userRecords[key]?.isLiked;
@@ -282,7 +312,6 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0, overflow: 'hidden', position: 'relative' }}>
-      
       {/* 상단 검색바 & 버튼 영역 */}
       <div style={{
         position: 'absolute',
@@ -324,7 +353,7 @@ export default function App() {
             }}
           />
           {searchTerm && (
-            <button 
+            <button
               onClick={() => setSearchTerm('')}
               style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#888', padding: '0 4px' }}
             >
@@ -410,7 +439,7 @@ export default function App() {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
             <h3 style={{ margin: 0, fontSize: '15px', color: '#1a73e8' }}>[{activePopupItem.MovieTitle}]</h3>
-            <button 
+            <button
               onClick={() => setActivePopupItem(null)}
               style={{ background: 'none', border: 'none', fontSize: '16px', cursor: 'pointer', color: '#888', padding: '0' }}
             >
@@ -420,7 +449,7 @@ export default function App() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <p style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#333' }}>📍 {activePopupItem.LocationName}</p>
-            <button 
+            <button
               onClick={() => toggleLike(activeRecordKey)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px', padding: 0 }}
               title="찜하기"
@@ -430,10 +459,10 @@ export default function App() {
           </div>
 
           {activePopupItem.SceneImageUrl && (
-            <img 
-              src={activePopupItem.SceneImageUrl} 
-              alt={activePopupItem.LocationName} 
-              style={{ width: '100%', height: '120px', borderRadius: '6px', marginBottom: '8px', objectFit: 'cover' }} 
+            <img
+              src={activePopupItem.SceneImageUrl}
+              alt={activePopupItem.LocationName}
+              style={{ width: '100%', height: '120px', borderRadius: '6px', marginBottom: '8px', objectFit: 'cover' }}
             />
           )}
 
@@ -449,7 +478,7 @@ export default function App() {
               <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>
                 성지순례 체크인 ({activeRecord.visitHistory ? activeRecord.visitHistory.length : 0}회)
               </span>
-              <button 
+              <button
                 onClick={() => addVisit(activeRecordKey)}
                 style={{ background: '#34a853', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
               >
@@ -462,7 +491,7 @@ export default function App() {
                 {activeRecord.visitHistory.map((timeStr, idx) => (
                   <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: '3px 6px', borderRadius: '4px', border: '1px solid #e0e0e0', fontSize: '10px' }}>
                     <span style={{ color: '#137333' }}>⏱️ {timeStr}</span>
-                    <button 
+                    <button
                       onClick={() => removeVisit(activeRecordKey, idx)}
                       style={{ background: 'none', border: 'none', color: '#c5221f', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', padding: '0 4px' }}
                       title="기록 삭제"
@@ -646,7 +675,7 @@ export default function App() {
       {/* 하단 세로 비율 고정 포스터 카드 목록 */}
       <div style={{
         position: 'absolute',
-        bottom: '20px',
+        bottom: '65px',
         left: '0',
         right: '0',
         zIndex: 10,
@@ -709,8 +738,8 @@ export default function App() {
               }}
             >
               {item.PosterUrl ? (
-                <img 
-                  src={item.PosterUrl} 
+                <img
+                  src={item.PosterUrl}
                   alt={item.MovieTitle}
                   style={{
                     width: '100%',
@@ -758,27 +787,26 @@ export default function App() {
         })}
       </div>
 
+      {/* 하단 고정 카카오 애드핏 배너 광고 영역 */}
+      <div
+        ref={adRef}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '55px',
+          background: '#ffffff',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 25,
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+        }}
+      />
+
       {/* 지도 영역 */}
       <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
-      {/* 💰 카카오 애드핏 광고 배너 영역 */}
-<div style={{
-  position: 'absolute',
-  bottom: '140px', // 하단 영화 포스터 목록 바로 위 공간
-  left: '0',
-  right: '0',
-  zIndex: 10,
-  display: 'flex',
-  justifyContent: 'center',
-  pointerEvents: 'auto'
-}}>
-  <div style={{ background: '#fff', padding: '4px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-    <ins className="kakao_ad_area"
-         style={{ display: 'none' }}
-         data-ad-unit = "DAN-mhLeRLPzRhfWLipn" 
-         data-ad-width = "320" 
-         data-ad-height = "50"></ins>
-  </div>
-</div>
     </div>
   );
 }
