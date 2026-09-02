@@ -215,6 +215,8 @@ export default function App() {
       const matchesSearch =
         item.MovieTitle.toLowerCase().includes(query) ||
         item.LocationName.toLowerCase().includes(query);
+        (item.Description && item.Description.toLowerCase().includes(query)) ||
+        (item.Address && item.Address.toLowerCase().includes(query));
 
       const matchesSelectedMovie = selectedMovie ? item.MovieTitle === selectedMovie : true;
 
