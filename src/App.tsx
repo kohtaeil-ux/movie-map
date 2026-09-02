@@ -214,7 +214,7 @@ export default function App() {
     allData.forEach((item) => {
       const matchesSearch =
         item.MovieTitle.toLowerCase().includes(query) ||
-        item.LocationName.toLowerCase().includes(query);
+        item.LocationName.toLowerCase().includes(query) ||
         (item.Description && item.Description.toLowerCase().includes(query)) ||
         (item.Address && item.Address.toLowerCase().includes(query));
 
