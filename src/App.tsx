@@ -983,7 +983,7 @@ export default function App() {
       />
 
       {/* 지도 영역 */}
-      <div ref={mapRef} className="map-view-container" />
+      <div ref={mapRef} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 1 }} />
     </div>
   );
 }
