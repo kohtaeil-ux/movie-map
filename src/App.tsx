@@ -571,7 +571,7 @@ export default function App() {
                 <span style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#555', marginBottom: '4px' }}>
                   🎵 OST
                 </span>
-                <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '6px', overflow: 'hidden', background: '#000' }}>
+                <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: '6px', overflow: 'hidden', background: '#000' }}>
                   <iframe
                     width="100%"
                     height="100%"
