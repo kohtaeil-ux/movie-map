@@ -557,6 +557,15 @@ export default function App() {
             )}
           </div>
 
+          {activePopupItem.YoutubeUrl && (
+            <a href={activePopupItem.YoutubeUrl} target="_blank" rel="noreferrer" style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#1a73e8', fontWeight: 'bold', textDecoration: 'none' }}>
+              ▶ 유튜브 영상에서 보기
+            </a>
+          )}
+          <a href={`https://www.google.com/maps/dir/?api=1&destination=${activePopupItem.lat},${activePopupItem.lng}`} target="_blank" rel="noreferrer" style={{ display: 'block', fontSize: '12px', color: '#34a853', fontWeight: 'bold', textDecoration: 'none' }}>
+            🚗 현재 위치에서 길찾기
+          </a>
+
           {/* 🎬 유튜브 영상 플레이어 영역 (YoutubeMusicUrl이 있을 때만 표시) */}
           {activePopupItem.YoutubeMusicUrl && (() => {
             const getYouTubeId = (url: string) => {
@@ -586,15 +595,6 @@ export default function App() {
               </div>
             ) : null;
           })()}
-
-          {activePopupItem.YoutubeUrl && (
-            <a href={activePopupItem.YoutubeUrl} target="_blank" rel="noreferrer" style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#1a73e8', fontWeight: 'bold', textDecoration: 'none' }}>
-              ▶ 유튜브 영상에서 보기
-            </a>
-          )}
-          <a href={`https://www.google.com/maps/dir/?api=1&destination=${activePopupItem.lat},${activePopupItem.lng}`} target="_blank" rel="noreferrer" style={{ display: 'block', fontSize: '12px', color: '#34a853', fontWeight: 'bold', textDecoration: 'none' }}>
-            🚗 현재 위치에서 길찾기
-          </a>
         </div>
       )}
 
