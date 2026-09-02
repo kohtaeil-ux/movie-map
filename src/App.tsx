@@ -34,6 +34,12 @@ export default function App() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerTab, setDrawerTab] = useState<'liked' | 'visited'>('liked');
 
+  // 기부 및 요청 팝업 상태
+  const [isDonateOpen, setIsDonateOpen] = useState(false);
+  const [requestMovieTitle, setRequestMovieTitle] = useState('');
+  const [requestMessage, setRequestMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [userRecords, setUserRecords] = useState<{ [key: string]: UserRecord }>(() => {
     try {
       const saved = localStorage.getItem('movie_map_user_records_v3');
@@ -44,6 +50,7 @@ export default function App() {
   });
 
   const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQEKtaZqTTM8UOBscio1E6ubJIzoFrte9oWOUtS69SpDBAjT4NuQIYwFKI6tRTr9Kd7nu3i9fHrdlb6/pub?output=csv';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyrIsG3bJeT7HHrwm3UsiQr4tA-cO1sRUzpAbhESgZmqR8d-aSeGopukAD8c1VUNwQ/exec';
 
   useEffect(() => {
     try {
@@ -126,7 +133,6 @@ export default function App() {
   useEffect(() => {
     if (!mapRef.current || !window.L) return;
 
-    // 만약 이미 지도 인스턴스가 존재한다면 중복 초기화를 막기 위해 제거
     if (mapRef.current._leaflet_id) {
       mapRef.current._leaflet_id = null;
     }
@@ -154,7 +160,6 @@ export default function App() {
         console.error('데이터 로드 실패:', err);
       });
 
-    // 컴포넌트가 언마운트될 때 지도 안전하게 정리
     return () => {
       map.remove();
     };
@@ -200,7 +205,6 @@ export default function App() {
   useEffect(() => {
     if (!mapInstance || allData.length === 0) return;
 
-    // 기존 마커 제거
     markers.forEach((m) => m.remove());
     const newMarkers: any[] = [];
     let firstMatchLatLng = null;
@@ -224,7 +228,7 @@ export default function App() {
       }
 
       const marker = L.marker(latLng).addTo(mapInstance);
-marker.bindTooltip(item.LocationName, { direction: 'top', offset: [0, -20] }); // ✅ 수정 완료
+      marker.bindTooltip(item.LocationName, { direction: 'top', offset: [0, -20] });
 
       marker.on('click', () => {
         setActivePopupItem(item);
@@ -282,6 +286,39 @@ marker.bindTooltip(item.LocationName, { direction: 'top', offset: [0, -20] }); /
     }
   };
 
+  const handleRequestSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!requestMovieTitle.trim()) {
+      alert('요청하실 영화 제목을 입력해주세요.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        movieTitle: requestMovieTitle,
+        message: requestMessage,
+      }),
+    })
+      .then(() => {
+        alert('영화 요청이 성공적으로 접수되었습니다! 소중한 의견 감사합니다.');
+        setRequestMovieTitle('');
+        setRequestMessage('');
+        setIsSubmitting(false);
+      })
+      .catch((err) => {
+        console.error('요청 전송 실패:', err);
+        alert('전송 중 오류가 발생했습니다. 다시 시도해 주세요.');
+        setIsSubmitting(false);
+      });
+  };
+
   const movieMap = new Map();
   allData.forEach((item) => {
     if (!movieMap.has(item.MovieTitle)) {
@@ -310,11 +347,11 @@ marker.bindTooltip(item.LocationName, { direction: 'top', offset: [0, -20] }); /
         position: 'absolute',
         top: '55px',
         left: '15px',
-        zIndex: 1000, // Leaflet 기본 레이어보다 위로 오도록 z-index 상향
+        zIndex: 1000,
         display: 'flex',
         gap: '8px',
         width: 'calc(100% - 90px)',
-        maxWidth: '320px',
+        maxWidth: '360px',
         boxSizing: 'border-box'
       }}>
         <div style={{
@@ -341,7 +378,9 @@ marker.bindTooltip(item.LocationName, { direction: 'top', offset: [0, -20] }); /
               outline: 'none',
               fontSize: '13px',
               fontFamily: 'sans-serif',
-              background: 'transparent'
+              background: 'transparent',
+              color: '#000000',
+              WebkitTextFillColor: '#000000'
             }}
           />
           {searchTerm && (
@@ -386,6 +425,28 @@ marker.bindTooltip(item.LocationName, { direction: 'top', offset: [0, -20] }); /
               borderRadius: '50%'
             }} />
           )}
+        </button>
+
+        {/* 기부 및 요청 버튼 */}
+        <button
+          onClick={() => setIsDonateOpen(true)}
+          style={{
+            background: 'white',
+            border: 'none',
+            borderRadius: '50%',
+            width: '42px',
+            height: '42px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '18px',
+            flexShrink: '0'
+          }}
+          title="개발자 후원 및 영화 요청"
+        >
+          ☕
         </button>
 
         {/* 내 위치 이동 버튼 */}
@@ -506,6 +567,100 @@ marker.bindTooltip(item.LocationName, { direction: 'top', offset: [0, -20] }); /
           </a>
         </div>
       )}
+
+      {/* 기부 및 영화 요청 팝업 모달 */}
+{isDonateOpen && (
+  <div style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: 'rgba(0,0,0,0.5)',
+    zIndex: 2000,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontFamily: 'sans-serif'
+  }}>
+    <div style={{
+      background: 'white',
+      width: '90%',
+      maxWidth: '360px',
+      maxHeight: '85vh',
+      borderRadius: '16px',
+      padding: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+      boxSizing: 'border-box',
+      overflowY: 'auto'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <h2 style={{ margin: 0, fontSize: '17px', color: '#202124' }}>☕ 개발자 후원 & 영화 요청</h2>
+        <button
+          onClick={() => setIsDonateOpen(false)}
+          style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#666' }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* 안내 스토리 텍스트 */}
+      <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px', fontSize: '12px', color: '#444', lineHeight: '1.5', marginBottom: '14px', border: '1px solid #eee' }}>
+        <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: '#1a73e8' }}>안녕하세요, 해석왕 고태일입니다.</p>
+        <p style={{ margin: '0 0 6px 0' }}>영화를 사랑하는 모든 분들을 위해 코딩 하나 모르는 제가 이 어플을 만들기 위해 무단히 노력하고 있습니다.</p>
+        <p style={{ margin: '0 0 6px 0' }}>하지만 서버 유지비나 지도 API 등 여러 비용적인 문제가 있고, 모든 영화를 혼자서 발굴하기엔 역부족입니다.</p>
+        <p style={{ margin: 0 }}>광고 클릭이나 따뜻한 기부가 서비스 지속에 큰 힘이 됩니다. 많은 애용 부탁드립니다!</p>
+      </div>
+
+      {/* 영화 요청 및 기부 통합 폼 */}
+      <form 
+        onSubmit={(e) => {
+          e.preventDefault();
+          // 1. 기존 시트 등록 함수 실행
+          handleRequestSubmit(e);
+          // 2. 카카오페이 송금 링크 동시 오픈 (팝업 차단 방지를 위해 직접 window.open 활용)
+          window.open("https://qr.kakaopay.com/FPKyyZ36s", "_blank");
+        }} 
+        style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}
+      >
+        <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>🎬 원하는 영화/촬영지 요청하기</span>
+        <input
+          type="text"
+          placeholder="예: 러브레터 오타루 촬영지"
+          value={requestMovieTitle}
+          onChange={(e) => setRequestMovieTitle(e.target.value)}
+          style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '12px', outline: 'none' }}
+        />
+        <textarea
+          placeholder="남기실 말씀이나 요청 사항 (선택)"
+          value={requestMessage}
+          onChange={(e) => setRequestMessage(e.target.value)}
+          style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '12px', outline: 'none', height: '50px', resize: 'none' }}
+        />
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          style={{ 
+            background: '#fee500', 
+            color: '#191919', 
+            border: 'none', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            fontSize: '13px', 
+            fontWeight: 'bold', 
+            cursor: 'pointer',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+            marginTop: '4px'
+          }}
+        >
+          {isSubmitting ? '처리 중...' : '💛 기부하고 요청 등록하기 🔗'}
+        </button>
+      </form>
+    </div>
+  </div>
+)}
 
       {/* 마이페이지 / 내 서랍 모달 */}
       {isDrawerOpen && (
