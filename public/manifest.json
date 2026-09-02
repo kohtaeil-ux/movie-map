@@ -1,15 +1,17 @@
 {
-    "short_name": "영화로케",
-    "name": "영화 로케 도감",
+    "short_name": "성지순례",
+    "name": "영화 성지순례",
     "icons": [
       {
         "src": "app-icon.png",
         "sizes": "512x512",
-        "type": "image/png"
+        "type": "image/png",
+        "purpose": "any maskable"
       }
     ],
     "start_url": "/",
-    "background_color": "#ffffff",
     "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#ffffff",
     "theme_color": "#1a73e8"
   }
