@@ -341,7 +341,7 @@ export default function App() {
   });
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div className="app-container">
       {/* 상단 검색바 & 버튼 영역 */}
       <div style={{
         position: 'absolute',
@@ -983,7 +983,7 @@ export default function App() {
       />
 
       {/* 지도 영역 */}
-      <div ref={mapRef} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 1 }} />
+      <div ref={mapRef} className="map-view-container" />
     </div>
   );
 }
