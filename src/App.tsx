@@ -345,8 +345,8 @@ export default function App() {
       {/* 상단 검색바 & 버튼 영역 */}
       <div style={{
         position: 'absolute',
-        top: '55px',
-        left: '15px',
+        top: '20px',
+        left: '70px',
         zIndex: 1000,
         display: 'flex',
         gap: '8px',
