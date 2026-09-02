@@ -557,9 +557,8 @@ export default function App() {
             )}
           </div>
 
-          {/* 🎵 유튜브 뮤직 플레이어 바 (YoutubeMusicUrl이 있을 때만 표시) */}
+          {/* 🎬 유튜브 영상 플레이어 영역 (YoutubeMusicUrl이 있을 때만 표시) */}
           {activePopupItem.YoutubeMusicUrl && (() => {
-            // 유튜브 주소에서 비디오 ID 추출 (예: https://youtu.be/xxxx 또는 watch?v=xxxx)
             const getYouTubeId = (url: string) => {
               const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
               const match = url.match(regExp);
@@ -568,21 +567,20 @@ export default function App() {
             const videoId = getYouTubeId(activePopupItem.YoutubeMusicUrl);
 
             return videoId ? (
-              <div style={{ background: '#f1f3f4', padding: '8px', borderRadius: '6px', marginBottom: '8px', border: '1px solid #dadce0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#3c4043' }}>🎧 OST 및 테마곡 재생</span>
-                  <span style={{ fontSize: '10px', color: '#5f6368' }}>YouTube Music</span>
-                </div>
-                {/* 화면은 안 보이게 숨기고(1x1 크기) 오디오만 재생되도록 임베드 */}
-                <div style={{ width: '100%', height: '36px', overflow: 'hidden', borderRadius: '4px', background: '#000' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <span style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#555', marginBottom: '4px' }}>
+                  🎵 OST
+                </span>
+                <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '6px', overflow: 'hidden', background: '#000' }}>
                   <iframe
                     width="100%"
-                    height="90"
-                    src={`https://www.youtube.com/embed/${videoId}?autoplay=0&enablejsapi=1`}
-                    title="YouTube music player"
+                    height="100%"
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    title="YouTube video player"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    style={{ marginTop: '-27px', border: 'none', pointerEvents: 'auto' }}
+                    allowFullScreen
+                    style={{ width: '100%', height: '100%', border: 'none' }}
                   ></iframe>
                 </div>
               </div>
