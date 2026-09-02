@@ -491,7 +491,7 @@ export default function App() {
           boxSizing: 'border-box'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <h3 style={{ margin: 0, fontSize: '15px', color: '#1a73e8' }}>[{activePopupItem.MovieTitle}]</h3>
+            <h3 style={{ margin: 0, fontSize: '15px', color: '#1a73e8' }}>{activePopupItem.MovieTitle}</h3>
             <button
               onClick={() => setActivePopupItem(null)}
               style={{ background: 'none', border: 'none', fontSize: '16px', cursor: 'pointer', color: '#888', padding: '0' }}
