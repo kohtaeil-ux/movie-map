@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>영화 성지 순례</title>
+    <title>성지순례</title>
 
     <!-- Leaflet 지도 라이브러리 -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -16,6 +16,10 @@
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- 카카오 애드핏 스크립트 (전역 삽입) -->
+    <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
