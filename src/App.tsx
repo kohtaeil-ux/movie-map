@@ -761,7 +761,13 @@ export default function App() {
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             flexShrink: 0
           }} 
-        />
+        >
+          <ins className="kakao_ad_area"
+               style={{ display: 'block', width: '320px', height: '50px' }}
+               data-ad-unit="DAN-aCmZuetEmgPKCiwf"
+               data-ad-width="320"
+               data-ad-height="50"></ins>
+        </div>
       </div>
 
       {/* 기부 및 영화 요청 팝업 모달 */}
