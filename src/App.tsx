@@ -75,7 +75,7 @@ export default function App() {
     const ins = document.createElement('ins');
     ins.className = 'kakao_ad_area';
     ins.style.display = 'block';
-    ins.setAttribute('data-ad-unit', 'DAN-mhLeRLPzRhfWLipn');
+    ins.setAttribute('data-ad-unit', 'DAN-aCmZuetEmgPKCiwf');
     ins.setAttribute('data-ad-width', '320');
     ins.setAttribute('data-ad-height', '50');
 
@@ -611,127 +611,140 @@ export default function App() {
         </div>
       )}
 
-      {/* 하단 세로 비율 고정 포스터 카드 목록 */}
+      {/* 하단 고정 영역: 상단에 포스터 목록, 맨 아래에 광고 바 배치 */}
       <div style={{
         position: 'absolute',
-        bottom: '65px',
+        bottom: '10px',
         left: '0',
         right: '0',
         zIndex: 1000,
         display: 'flex',
-        gap: '10px',
-        overflowX: 'auto',
-        padding: '10px 16px',
-        boxSizing: 'border-box',
-        WebkitOverflowScrolling: 'touch',
-        scrollbarWidth: 'none'
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '6px',
+        pointerEvents: 'auto'
       }}>
-        {/* 모드 순환 토글 버튼 */}
-        <div
-          onClick={() => {
-            const currentIndex = modeList.indexOf(viewMode);
-            const nextMode = modeList[(currentIndex + 1) % modeList.length];
-            setViewMode(nextMode);
-            setSelectedMovie('');
-            setSearchTerm('');
-            setActivePopupItem(null);
-          }}
-          style={{
-            flex: '0 0 80px',
-            height: '118px',
-            background: '#1a73e8',
-            color: 'white',
-            borderRadius: '10px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            transition: 'all 0.2s',
-            border: '2px solid #1a73e8',
-            flexShrink: 0
-          }}
-        >
-          <span style={{ fontSize: '22px', marginBottom: '4px' }}>{modeEmojis[viewMode]}</span>
-          {viewMode === '전체' ? '전체 보기' : `${viewMode} 모음`}
-        </div>
+        {/* 하단 세로 비율 고정 포스터 카드 목록 */}
+        <div style={{
+          display: 'flex',
+          gap: '10px',
+          overflowX: 'auto',
+          width: '100%',
+          padding: '0 16px',
+          boxSizing: 'border-box',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none'
+        }}>
+          {/* 모드 순환 토글 버튼 */}
+          <div
+            onClick={() => {
+              const currentIndex = modeList.indexOf(viewMode);
+              const nextMode = modeList[(currentIndex + 1) % modeList.length];
+              setViewMode(nextMode);
+              setSelectedMovie('');
+              setSearchTerm('');
+              setActivePopupItem(null);
+            }}
+            style={{
+              flex: '0 0 80px',
+              height: '118px',
+              background: '#1a73e8',
+              color: 'white',
+              borderRadius: '10px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              transition: 'all 0.2s',
+              border: '2px solid #1a73e8',
+              flexShrink: 0
+            }}
+          >
+            <span style={{ fontSize: '22px', marginBottom: '4px' }}>{modeEmojis[viewMode]}</span>
+            {viewMode === '전체' ? '전체 보기' : `${viewMode} 모음`}
+          </div>
 
-        {filteredItems.map((item) => {
-          const isSelected = selectedMovie === item.MovieTitle;
-          return (
-            <div
-              key={item.MovieTitle}
-              onClick={() => {
-                setSelectedMovie(isSelected ? '' : item.MovieTitle);
-                setSearchTerm('');
-                setActivePopupItem(null);
-              }}
-              style={{
-                flex: '0 0 80px',
-                height: '118px',
-                background: 'white',
-                borderRadius: '10px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                cursor: 'pointer',
-                overflow: 'hidden',
-                position: 'relative',
-                border: isSelected ? '3px solid #1a73e8' : '1px solid rgba(0,0,0,0.1)',
-                transition: 'all 0.2s',
-                transform: isSelected ? 'scale(1.05)' : 'scale(1)',
-                flexShrink: 0
-              }}
-            >
-              {item.PosterUrl ? (
-                <img
-                  src={item.PosterUrl}
-                  alt={item.MovieTitle}
-                  style={{
+          {filteredItems.map((item) => {
+            const isSelected = selectedMovie === item.MovieTitle;
+            return (
+              <div
+                key={item.MovieTitle}
+                onClick={() => {
+                  setSelectedMovie(isSelected ? '' : item.MovieTitle);
+                  setSearchTerm('');
+                  setActivePopupItem(null);
+                }}
+                style={{
+                  flex: '0 0 80px',
+                  height: '118px',
+                  background: 'white',
+                  borderRadius: '10px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  border: isSelected ? '3px solid #1a73e8' : '1px solid rgba(0,0,0,0.1)',
+                  transition: 'all 0.2s',
+                  transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                  flexShrink: 0
+                }}
+              >
+                {item.PosterUrl ? (
+                  <img
+                    src={item.PosterUrl}
+                    alt={item.MovieTitle}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                ) : (
+                  <div style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover'
-                  }}
-                />
-              ) : (
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#f1f3f4',
+                    color: '#333',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    padding: '4px',
+                    boxSizing: 'border-box'
+                  }}>
+                    {item.MovieTitle}
+                  </div>
+                )}
                 <div style={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: '#f1f3f4',
-                  color: '#333',
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+                  color: 'white',
                   fontSize: '11px',
                   fontWeight: 'bold',
+                  padding: '6px 4px 4px 4px',
                   textAlign: 'center',
-                  padding: '4px',
-                  boxSizing: 'border-box'
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
                 }}>
                   {item.MovieTitle}
                 </div>
-              )}
-              <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-                color: 'white',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                padding: '6px 4px 4px 4px',
-                textAlign: 'center',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-              }}>
-                {item.MovieTitle}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        {/* 카카오 애드핏 배너 (320x50) - 포스터 아래 맨 하단 고정 */}
+        <div ref={adRef} style={{ width: '320px', height: '50px', background: 'rgba(255,255,255,0.9)', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
       </div>
 
       {/* 기부 및 영화 요청 팝업 모달 */}
