@@ -679,7 +679,6 @@ export default function App() {
                   setActivePopupItem(null);
                 }}
                 style={{
-                  flex: '0 0 80px',
                   height: '118px',
                   background: 'white',
                   borderRadius: '10px',
@@ -690,7 +689,10 @@ export default function App() {
                   border: isSelected ? '3px solid #1a73e8' : '1px solid rgba(0,0,0,0.1)',
                   transition: 'all 0.2s',
                   transform: isSelected ? 'scale(1.05)' : 'scale(1)',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
                 {item.PosterUrl ? (
@@ -698,14 +700,14 @@ export default function App() {
                     src={item.PosterUrl}
                     alt={item.MovieTitle}
                     style={{
-                      width: '100%',
                       height: '100%',
-                      objectFit: 'cover'
+                      width: 'auto',
+                      objectFit: 'contain'
                     }}
                   />
                 ) : (
                   <div style={{
-                    width: '100%',
+                    width: '80px',
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
