@@ -10,6 +10,9 @@ interface LocationItem {
   Description: string;
   YoutubeUrl: string;
   PosterUrl?: string;
+  Address?: string;
+  Genre?: string;
+  YoutubeMusicUrl?: string;
   lat: number;
   lng: number;
 }
@@ -29,6 +32,7 @@ export default function App() {
   const [selectedMovie, setSelectedMovie] = useState<string>('');
   const [myLocationMarker, setMyLocationMarker] = useState<any>(null);
   const [activePopupItem, setActivePopupItem] = useState<LocationItem | null>(null);
+  const [viewMode, setViewMode] = useState('전체');
 
   // 마이페이지 / 서랍 모달 상태
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -48,6 +52,9 @@ export default function App() {
       return {};
     }
   });
+
+  const modeList = ['전체', '영화', '드라마', '애니', '뮤비', '게임'];
+  const modeEmojis: { [key: string]: string } = { '전체': '🗺️', '영화': '🎬', '드라마': '📺', '애니': '✨', '뮤비': '🎵', '게임': '🎮' };
 
   const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQEKtaZqTTM8UOBscio1E6ubJIzoFrte9oWOUtS69SpDBAjT4NuQIYwFKI6tRTr9Kd7nu3i9fHrdlb6/pub?output=csv';
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyrIsG3bJeT7HHrwm3UsiQr4tA-cO1sRUzpAbhESgZmqR8d-aSeGopukAD8c1VUNwQ/exec';
@@ -201,6 +208,18 @@ export default function App() {
     });
   };
 
+  const movieMap = new Map();
+  allData.forEach((item) => {
+    if (!movieMap.has(item.MovieTitle)) {
+      movieMap.set(item.MovieTitle, item);
+    }
+  });
+  const uniqueMovies = Array.from(movieMap.values()) as LocationItem[];
+
+  const filteredItems = viewMode === '전체' 
+     ? uniqueMovies 
+     : uniqueMovies.filter(item => item.Genre === viewMode);
+
   // 마커 렌더링 및 검색/필터 연동
   useEffect(() => {
     if (!mapInstance || allData.length === 0) return;
@@ -219,9 +238,11 @@ export default function App() {
         (item.Address && item.Address.toLowerCase().includes(query));
 
       const matchesSelectedMovie = selectedMovie ? item.MovieTitle === selectedMovie : true;
+      const matchesViewMode = viewMode === '전체' ? true : item.Genre === viewMode;
 
       if (searchTerm && !matchesSearch) return;
       if (selectedMovie && !matchesSelectedMovie) return;
+      if (!searchTerm && !selectedMovie && !matchesViewMode) return;
 
       const latLng = [item.lat, item.lng];
 
@@ -244,10 +265,8 @@ export default function App() {
 
     if ((searchTerm || selectedMovie) && firstMatchLatLng) {
       mapInstance.setView(firstMatchLatLng, 12);
-    } else if (!searchTerm && !selectedMovie && allData.length > 0) {
-      mapInstance.setView([allData[0].lat, allData[0].lng], 7);
     }
-  }, [searchTerm, selectedMovie, allData, mapInstance]);
+  }, [searchTerm, selectedMovie, viewMode, allData, mapInstance]);
 
   const handlePanToCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -258,7 +277,6 @@ export default function App() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const latLng = [position.coords.latitude, position.coords.longitude];
-
         mapInstance.setView(latLng, 14);
 
         if (myLocationMarker) {
@@ -321,14 +339,6 @@ export default function App() {
       });
   };
 
-  const movieMap = new Map();
-  allData.forEach((item) => {
-    if (!movieMap.has(item.MovieTitle)) {
-      movieMap.set(item.MovieTitle, item);
-    }
-  });
-  const uniqueMovies = Array.from(movieMap.values());
-
   const activeRecordKey = activePopupItem ? `${activePopupItem.MovieTitle}_${activePopupItem.LocationName}` : '';
   const activeRecord = userRecords[activeRecordKey] || { isLiked: false, visitHistory: [] };
 
@@ -343,17 +353,20 @@ export default function App() {
   });
 
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      {/* 지도 영역 */}
+      <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+
       {/* 상단 검색바 & 버튼 영역 */}
       <div style={{
         position: 'absolute',
         top: '20px',
-        left: '70px',
+        left: '20px',
         zIndex: 1000,
         display: 'flex',
         gap: '8px',
-        width: 'calc(100% - 90px)',
-        maxWidth: '360px',
+        width: 'calc(100% - 40px)',
+        maxWidth: '380px',
         boxSizing: 'border-box'
       }}>
         <div style={{
@@ -381,8 +394,7 @@ export default function App() {
               fontSize: '13px',
               fontFamily: 'sans-serif',
               background: 'transparent',
-              color: '#000000',
-              WebkitTextFillColor: '#000000'
+              color: '#000000'
             }}
           />
           {searchTerm && (
@@ -568,7 +580,6 @@ export default function App() {
             🚗 현재 위치에서 길찾기
           </a>
 
-          {/* 🎬 유튜브 영상 플레이어 영역 (YoutubeMusicUrl이 있을 때만 표시) */}
           {activePopupItem.YoutubeMusicUrl && (() => {
             const getYouTubeId = (url: string) => {
               const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -578,11 +589,11 @@ export default function App() {
             const videoId = getYouTubeId(activePopupItem.YoutubeMusicUrl);
 
             return videoId ? (
-              <div style={{ marginBottom: '8px' }}>
+              <div style={{ marginTop: '8px' }}>
                 <span style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#555', marginBottom: '4px' }}>
                   🎵 OST
                 </span>
-                <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: '6px', overflow: 'hidden', background: '#000' }}>
+                <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '6px', overflow: 'hidden', background: '#000' }}>
                   <iframe
                     width="100%"
                     height="100%"
@@ -597,257 +608,6 @@ export default function App() {
               </div>
             ) : null;
           })()}
-        </div>
-      )}
-
-      {/* 기부 및 영화 요청 팝업 모달 */}
-{isDonateOpen && (
-  <div style={{
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    background: 'rgba(0,0,0,0.5)',
-    zIndex: 2000,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontFamily: 'sans-serif'
-  }}>
-    <div style={{
-      background: 'white',
-      width: '90%',
-      maxWidth: '360px',
-      maxHeight: '85vh',
-      borderRadius: '16px',
-      padding: '20px',
-      display: 'flex',
-      flexDirection: 'column',
-      boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-      boxSizing: 'border-box',
-      overflowY: 'auto'
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <h2 style={{ margin: 0, fontSize: '17px', color: '#202124' }}>☕ 개발자 후원 & 영화 요청</h2>
-        <button
-          onClick={() => setIsDonateOpen(false)}
-          style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#666' }}
-        >
-          ✕
-        </button>
-      </div>
-
-      {/* 안내 스토리 텍스트 */}
-      <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px', fontSize: '12px', color: '#444', lineHeight: '1.5', marginBottom: '14px', border: '1px solid #eee' }}>
-        <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: '#1a73e8' }}>안녕하세요, 해석왕 고태일입니다.</p>
-        <p style={{ margin: '0 0 6px 0' }}>영화를 사랑하는 모든 분들을 위해 코딩 하나 모르는 제가 이 어플을 만들기 위해 무단히 노력하고 있습니다.</p>
-        <p style={{ margin: '0 0 6px 0' }}>하지만 서버 유지비나 지도 API 등 여러 비용적인 문제가 있고, 모든 영화를 혼자서 발굴하기엔 역부족입니다.</p>
-        <p style={{ margin: 0 }}>광고 클릭이나 따뜻한 기부가 서비스 지속에 큰 힘이 됩니다. 많은 애용 부탁드립니다!</p>
-      </div>
-
-      {/* 영화 요청 및 기부 통합 폼 */}
-      <form 
-        onSubmit={(e) => {
-          e.preventDefault();
-          // 1. 기존 시트 등록 함수 실행
-          handleRequestSubmit(e);
-          // 2. 카카오페이 송금 링크 동시 오픈 (팝업 차단 방지를 위해 직접 window.open 활용)
-          window.open("https://qr.kakaopay.com/FPKyyZ36s", "_blank");
-        }} 
-        style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}
-      >
-        <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>🎬 원하는 영화/촬영지 요청하기</span>
-        <input
-          type="text"
-          placeholder="예: 러브레터 오타루 촬영지"
-          value={requestMovieTitle}
-          onChange={(e) => setRequestMovieTitle(e.target.value)}
-          style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '12px', outline: 'none' }}
-        />
-        <textarea
-          placeholder="남기실 말씀이나 요청 사항 (선택)"
-          value={requestMessage}
-          onChange={(e) => setRequestMessage(e.target.value)}
-          style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '12px', outline: 'none', height: '50px', resize: 'none' }}
-        />
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          style={{ 
-            background: '#fee500', 
-            color: '#191919', 
-            border: 'none', 
-            padding: '12px', 
-            borderRadius: '8px', 
-            fontSize: '13px', 
-            fontWeight: 'bold', 
-            cursor: 'pointer',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-            marginTop: '4px'
-          }}
-        >
-          {isSubmitting ? '처리 중...' : '💛 기부하고 요청 등록하기 🔗'}
-        </button>
-      </form>
-    </div>
-  </div>
-)}
-
-      {/* 마이페이지 / 내 서랍 모달 */}
-      {isDrawerOpen && (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(0,0,0,0.5)',
-          zIndex: 2000,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          fontFamily: 'sans-serif'
-        }}>
-          <div style={{
-            background: 'white',
-            width: '90%',
-            maxWidth: '340px',
-            maxHeight: '75vh',
-            borderRadius: '16px',
-            padding: '18px',
-            display: 'flex',
-            flexDirection: 'column',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-            boxSizing: 'border-box'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <h2 style={{ margin: 0, fontSize: '17px', color: '#202124' }}>📂 내 성지순례 서랍</h2>
-              <button
-                onClick={() => setIsDrawerOpen(false)}
-                style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#666' }}
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* 탭 헤더 */}
-            <div style={{ display: 'flex', borderBottom: '1px solid #eee', marginBottom: '12px' }}>
-              <button
-                onClick={() => setDrawerTab('liked')}
-                style={{
-                  flex: 1,
-                  padding: '8px 0',
-                  border: 'none',
-                  background: 'none',
-                  borderBottom: drawerTab === 'liked' ? '2px solid #e53935' : 'none',
-                  color: drawerTab === 'liked' ? '#e53935' : '#777',
-                  fontWeight: 'bold',
-                  fontSize: '13px',
-                  cursor: 'pointer'
-                }}
-              >
-                ❤️ 찜한 장소 ({likedItems.length})
-              </button>
-              <button
-                onClick={() => setDrawerTab('visited')}
-                style={{
-                  flex: 1,
-                  padding: '8px 0',
-                  border: 'none',
-                  background: 'none',
-                  borderBottom: drawerTab === 'visited' ? '2px solid #34a853' : 'none',
-                  color: drawerTab === 'visited' ? '#34a853' : '#777',
-                  fontWeight: 'bold',
-                  fontSize: '13px',
-                  cursor: 'pointer'
-                }}
-              >
-                ✅ 체크인 목록 ({visitedItems.length})
-              </button>
-            </div>
-
-            {/* 탭 콘텐츠 */}
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {drawerTab === 'liked' && (
-                likedItems.length === 0 ? (
-                  <p style={{ fontSize: '13px', color: '#999', textAlign: 'center', padding: '20px 0' }}>
-                    아직 찜한 장소가 없습니다. 🤍를 눌러 장소를 보관해 보세요!
-                  </p>
-                ) : (
-                  likedItems.map((item) => (
-                    <div
-                      key={`${item.MovieTitle}_${item.LocationName}`}
-                      onClick={() => handleSelectLocationFromDrawer(item)}
-                      style={{
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid #eee',
-                        background: '#fcfcfc',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px'
-                      }}
-                    >
-                      {item.PosterUrl ? (
-                        <img src={item.PosterUrl} alt={item.MovieTitle} style={{ width: '40px', height: '55px', objectFit: 'cover', borderRadius: '4px' }} />
-                      ) : (
-                        <div style={{ width: '40px', height: '55px', background: '#eee', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>🎬</div>
-                      )}
-                      <div style={{ flex: 1, overflow: 'hidden' }}>
-                        <div style={{ fontSize: '11px', color: '#1a73e8', fontWeight: 'bold' }}>{item.MovieTitle}</div>
-                        <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>📍 {item.LocationName}</div>
-                      </div>
-                      <span style={{ fontSize: '16px' }}>❤️</span>
-                    </div>
-                  ))
-                )
-              )}
-
-              {drawerTab === 'visited' && (
-                visitedItems.length === 0 ? (
-                  <p style={{ fontSize: '13px', color: '#999', textAlign: 'center', padding: '20px 0' }}>
-                    아직 체크인한 장소가 없습니다. 현장에 방문해서 체크인을 남겨보세요!
-                  </p>
-                ) : (
-                  visitedItems.map((item) => {
-                    const key = `${item.MovieTitle}_${item.LocationName}`;
-                    const history = userRecords[key]?.visitHistory || [];
-                    const lastVisit = history[history.length - 1] || '';
-                    return (
-                      <div
-                        key={key}
-                        onClick={() => handleSelectLocationFromDrawer(item)}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: '1px solid #eee',
-                          background: '#fcfcfc',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px'
-                        }}
-                      >
-                        {item.PosterUrl ? (
-                          <img src={item.PosterUrl} alt={item.MovieTitle} style={{ width: '40px', height: '55px', objectFit: 'cover', borderRadius: '4px' }} />
-                        ) : (
-                          <div style={{ width: '40px', height: '55px', background: '#eee', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>🎬</div>
-                        )}
-                        <div style={{ flex: 1, overflow: 'hidden' }}>
-                          <div style={{ fontSize: '11px', color: '#34a853', fontWeight: 'bold' }}>{item.MovieTitle} (총 {history.length}회 방문)</div>
-                          <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>📍 {item.LocationName}</div>
-                          <div style={{ fontSize: '10px', color: '#888', marginTop: '2px' }}>최근: {lastVisit}</div>
-                        </div>
-                        <span style={{ fontSize: '16px' }}>✅</span>
-                      </div>
-                    );
-                  })
-                )
-              )}
-            </div>
-          </div>
         </div>
       )}
 
@@ -866,13 +626,21 @@ export default function App() {
         WebkitOverflowScrolling: 'touch',
         scrollbarWidth: 'none'
       }}>
+        {/* 모드 순환 토글 버튼 */}
         <div
-          onClick={() => { setSelectedMovie(''); setSearchTerm(''); setActivePopupItem(null); }}
+          onClick={() => {
+            const currentIndex = modeList.indexOf(viewMode);
+            const nextMode = modeList[(currentIndex + 1) % modeList.length];
+            setViewMode(nextMode);
+            setSelectedMovie('');
+            setSearchTerm('');
+            setActivePopupItem(null);
+          }}
           style={{
             flex: '0 0 80px',
             height: '118px',
-            background: selectedMovie === '' && !searchTerm ? '#1a73e8' : 'white',
-            color: selectedMovie === '' && !searchTerm ? 'white' : '#333',
+            background: '#1a73e8',
+            color: 'white',
             borderRadius: '10px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
             cursor: 'pointer',
@@ -883,15 +651,15 @@ export default function App() {
             fontSize: '12px',
             fontWeight: 'bold',
             transition: 'all 0.2s',
-            border: selectedMovie === '' && !searchTerm ? '2px solid #1a73e8' : '1px solid #ddd',
+            border: '2px solid #1a73e8',
             flexShrink: 0
           }}
         >
-          <span style={{ fontSize: '22px', marginBottom: '4px' }}>🗺️</span>
-          전체 보기
+          <span style={{ fontSize: '22px', marginBottom: '4px' }}>{modeEmojis[viewMode]}</span>
+          {viewMode === '전체' ? '전체 보기' : `${viewMode} 모음`}
         </div>
 
-        {uniqueMovies.map((item) => {
+        {filteredItems.map((item) => {
           const isSelected = selectedMovie === item.MovieTitle;
           return (
             <div
@@ -966,26 +734,234 @@ export default function App() {
         })}
       </div>
 
-      {/* 하단 고정 카카오 애드핏 배너 광고 영역 */}
-      <div
-        ref={adRef}
-        style={{
+      {/* 기부 및 영화 요청 팝업 모달 */}
+      {isDonateOpen && (
+        <div style={{
           position: 'absolute',
-          bottom: 0,
+          top: 0,
           left: 0,
-          right: 0,
-          height: '55px',
-          background: '#ffffff',
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.5)',
+          zIndex: 2000,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 1000,
-          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
-        }}
-      />
+          fontFamily: 'sans-serif'
+        }}>
+          <div style={{
+            background: 'white',
+            width: '90%',
+            maxWidth: '360px',
+            maxHeight: '85vh',
+            borderRadius: '16px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+            boxSizing: 'border-box',
+            overflowY: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h2 style={{ margin: 0, fontSize: '17px', color: '#202124' }}>☕ 개발자 후원 & 영화 요청</h2>
+              <button
+                onClick={() => setIsDonateOpen(false)}
+                style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#666' }}
+              >
+                ✕
+              </button>
+            </div>
 
-      {/* 지도 영역 */}
-      <div ref={mapRef} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 1 }} />
+            <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px', fontSize: '12px', color: '#444', lineHeight: '1.5', marginBottom: '14px', border: '1px solid #eee' }}>
+              <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: '#1a73e8' }}>안녕하세요, 해석왕 고태일입니다.</p>
+              <p style={{ margin: '0 0 6px 0' }}>영화를 사랑하는 모든 분들을 위해 코딩 하나 모르는 제가 이 어플을 만들기 위해 무단히 노력하고 있습니다.</p>
+              <p style={{ margin: '0 0 6px 0' }}>하지만 서버 유지비나 지도 API 등 여러 비용적인 문제가 있고, 모든 영화를 혼자서 발굴하기엔 역부족입니다.</p>
+              <p style={{ margin: 0 }}>광고 클릭이나 따뜻한 기부가 서비스 지속에 큰 힘이 됩니다. 많은 애용 부탁드립니다!</p>
+            </div>
+
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleRequestSubmit(e);
+                window.open("https://qr.kakaopay.com/FPKyyZ36s", "_blank");
+              }} 
+              style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}
+            >
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>🎬 원하는 영화/촬영지 요청하기</span>
+              <input
+                type="text"
+                placeholder="예: 러브레터 오타루 촬영지"
+                value={requestMovieTitle}
+                onChange={(e) => setRequestMovieTitle(e.target.value)}
+                style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '12px', outline: 'none' }}
+              />
+              <textarea
+                placeholder="남기실 말씀이나 요청 사항 (선택)"
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
+                style={{ padding: '8px 10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '12px', outline: 'none', height: '50px', resize: 'none' }}
+              />
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{ 
+                  background: '#fee500', 
+                  color: '#191919', 
+                  border: 'none', 
+                  padding: '12px', 
+                  borderRadius: '8px', 
+                  fontSize: '13px', 
+                  fontWeight: 'bold', 
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                  marginTop: '4px'
+                }}
+              >
+                {isSubmitting ? '처리 중...' : '💛 기부하고 요청 등록하기 🔗'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 마이페이지 / 내 서랍 모달 */}
+      {isDrawerOpen && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.5)',
+          zIndex: 2000,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          fontFamily: 'sans-serif'
+        }}>
+          <div style={{
+            background: 'white',
+            width: '90%',
+            maxWidth: '340px',
+            maxHeight: '75vh',
+            borderRadius: '16px',
+            padding: '18px',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+            boxSizing: 'border-box'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h2 style={{ margin: 0, fontSize: '17px', color: '#202124' }}>📂 내 성지순례 서랍</h2>
+              <button
+                onClick={() => setIsDrawerOpen(false)}
+                style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#666' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', borderBottom: '1px solid #eee', marginBottom: '12px' }}>
+              <button
+                onClick={() => setDrawerTab('liked')}
+                style={{
+                  flex: 1,
+                  padding: '8px 0',
+                  border: 'none',
+                  background: 'none',
+                  borderBottom: drawerTab === 'liked' ? '2px solid #e53935' : 'none',
+                  color: drawerTab === 'liked' ? '#e53935' : '#777',
+                  fontWeight: 'bold',
+                  fontSize: '13px',
+                  cursor: 'pointer'
+                }}
+              >
+                ❤️ 찜한 장소 ({likedItems.length})
+              </button>
+              <button
+                onClick={() => setDrawerTab('visited')}
+                style={{
+                  flex: 1,
+                  padding: '8px 0',
+                  border: 'none',
+                  background: 'none',
+                  borderBottom: drawerTab === 'visited' ? '2px solid #34a853' : 'none',
+                  color: drawerTab === 'visited' ? '#34a853' : '#777',
+                  fontWeight: 'bold',
+                  fontSize: '13px',
+                  cursor: 'pointer'
+                }}
+              >
+                ✅ 체크인 목록 ({visitedItems.length})
+              </button>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {drawerTab === 'liked' && (
+                likedItems.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: '#999', textAlign: 'center', padding: '20px 0' }}>
+                    아직 찜한 장소가 없습니다. 🤍를 눌러 장소를 보관해 보세요!
+                  </p>
+                ) : (
+                  likedItems.map((item) => (
+                    <div
+                      key={`${item.MovieTitle}_${item.LocationName}`}
+                      onClick={() => handleSelectLocationFromDrawer(item)}
+                      style={{
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: '1px solid #eee',
+                        background: '#fcfcfc',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                      }}
+                    >
+                      {item.PosterUrl && <img src={item.PosterUrl} alt="" style={{ width: '36px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} />}
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#1a73e8' }}>{item.MovieTitle}</div>
+                        <div style={{ fontSize: '11px', color: '#333' }}>{item.LocationName}</div>
+                      </div>
+                    </div>
+                  ))
+                )
+              )}
+
+              {drawerTab === 'visited' && (
+                visitedItems.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: '#999', textAlign: 'center', padding: '20px 0' }}>
+                    아직 체크인한 장소가 없습니다. 촬영지를 방문해 체크인을 남겨보세요!
+                  </p>
+                ) : (
+                  visitedItems.map((item) => (
+                    <div
+                      key={`${item.MovieTitle}_${item.LocationName}`}
+                      onClick={() => handleSelectLocationFromDrawer(item)}
+                      style={{
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: '1px solid #eee',
+                        background: '#fcfcfc',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                      }}
+                    >
+                      {item.PosterUrl && <img src={item.PosterUrl} alt="" style={{ width: '36px', height: '48px', objectFit: 'cover', borderRadius: '4px' }} />}
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#34a853' }}>{item.MovieTitle}</div>
+                        <div style={{ fontSize: '11px', color: '#333' }}>{item.LocationName}</div>
+                      </div>
+                    </div>
+                  ))
+                )
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
