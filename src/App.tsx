@@ -744,7 +744,22 @@ export default function App() {
         </div>
 
         {/* 카카오 애드핏 배너 (320x50) - 포스터 아래 맨 하단 고정 */}
-        <div ref={adRef} style={{ width: '320px', height: '50px', background: 'rgba(255,255,255,0.9)', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
+        <div 
+          ref={adRef} 
+          style={{ 
+            width: '320px', 
+            height: '50px', 
+            minHeight: '50px',
+            background: 'rgba(255,255,255,0.9)', 
+            borderRadius: '6px', 
+            overflow: 'hidden', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            flexShrink: 0
+          }} 
+        />
       </div>
 
       {/* 기부 및 영화 요청 팝업 모달 */}
