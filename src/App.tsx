@@ -699,7 +699,6 @@ export default function App() {
                   position: 'relative',
                   border: isSelected ? '3px solid #1a73e8' : '1px solid rgba(0,0,0,0.1)',
                   transition: 'all 0.2s',
-                  transform: isSelected ? 'scale(1.05)' : 'scale(1)',
                   flexShrink: 0,
                   display: 'flex',
                   alignItems: 'center',
