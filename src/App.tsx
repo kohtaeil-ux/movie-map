@@ -635,7 +635,7 @@ export default function App() {
           WebkitOverflowScrolling: 'touch',
           scrollbarWidth: 'none'
         }}>
-          {/* 모드 순환 토글 버튼 */}
+          {/* 모드 순환 토글 버튼 (뱃지 제거된 원본 상태) */}
           <div
             onClick={() => {
               const currentIndex = modeList.indexOf(viewMode);
@@ -670,6 +670,17 @@ export default function App() {
 
           {filteredItems.map((item) => {
             const isSelected = selectedMovie === item.MovieTitle;
+
+            // 각 영화/촬영지별 날짜가 오늘 기준 3일 이내인지 개별 판별
+            let isRecentlyUpdated = false;
+            if (item.Date) {
+              const targetDate = new Date(item.Date);
+              const today = new Date('2026-09-08'); // 현재 기준 날짜
+              const diffTime = today.getTime() - targetDate.getTime();
+              const diffDays = diffTime / (1000 * 60 * 60 * 24);
+              isRecentlyUpdated = diffDays >= 0 && diffDays <= 3;
+            }
+
             return (
               <div
                 key={item.MovieTitle}
@@ -695,6 +706,26 @@ export default function App() {
                   justifyContent: 'center'
                 }}
               >
+                {/* 3일 이내 업데이트된 항목인 경우에만 해당 포스터 우측 상단에 뱃지 표시 */}
+                {isRecentlyUpdated && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '4px',
+                    right: '4px',
+                    background: '#ff3b30',
+                    color: 'white',
+                    fontSize: '8px',
+                    fontWeight: 'bold',
+                    padding: '2px 4px',
+                    borderRadius: '6px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    zIndex: 10,
+                    letterSpacing: '-0.5px'
+                  }}>
+                    UPDATE
+                  </span>
+                )}
+
                 {item.PosterUrl ? (
                   <img
                     src={item.PosterUrl}
