@@ -825,6 +825,7 @@ export default function App() {
 
                 setIsSubmitting(true);
 
+                // 구글 시트로 요청 전송 (no-cors 방식이므로 응답 대기 없이 바로 이동 처리)
                 fetch(APPS_SCRIPT_URL, {
                   method: 'POST',
                   mode: 'no-cors',
@@ -835,22 +836,13 @@ export default function App() {
                     movieTitle: requestMovieTitle,
                     message: requestMessage,
                   }),
-                })
-                  .then(() => {
-                    alert('영화 요청이 접수되었습니다! 후원 페이지로 이동합니다.');
-                    setRequestMovieTitle('');
-                    setRequestMessage('');
-                    setIsSubmitting(false);
-                    setIsDonateOpen(false);
-                    
-                    // PWA 내부 웹뷰를 탈출하여 스마트폰 기본 브라우저로 강제 오픈
-                    window.open("https://qr.kakaopay.com/FPKyyZ36s", "_system");
-                  })
-                  .catch((err) => {
-                    console.error('요청 전송 실패:', err);
-                    alert('전송 중 오류가 발생했습니다. 다시 시도해 주세요.');
-                    setIsSubmitting(false);
-                  });
+                }).catch((err) => {
+                  console.error('요청 전송 실패:', err);
+                });
+
+                // 잠시 후 알림과 함께 현재 앱 창을 카카오페이 페이지로 통째로 전환
+                alert('영화 요청이 접수되었습니다! 카카오페이 후원 페이지로 이동합니다.');
+                window.location.href = "https://qr.kakaopay.com/FPKyyZ36s";
               }} 
               style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}
             >
