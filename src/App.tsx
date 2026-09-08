@@ -819,7 +819,7 @@ export default function App() {
               onSubmit={(e) => {
                 e.preventDefault();
                 handleRequestSubmit(e);
-                window.open("https://qr.kakaopay.com/FPKyyZ36s", "_blank");
+                window.location.href = "https://qr.kakaopay.com/FPKyyZ36s";
               }} 
               style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}
             >
