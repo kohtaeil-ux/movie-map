@@ -825,7 +825,7 @@ export default function App() {
 
                 setIsSubmitting(true);
 
-                // 구글 시트로 요청 전송 (no-cors 방식이므로 응답 대기 없이 바로 이동 처리)
+                // 구글 시트로 요청 전송
                 fetch(APPS_SCRIPT_URL, {
                   method: 'POST',
                   mode: 'no-cors',
@@ -840,9 +840,27 @@ export default function App() {
                   console.error('요청 전송 실패:', err);
                 });
 
-                // 잠시 후 알림과 함께 현재 앱 창을 카카오페이 페이지로 통째로 전환
-                alert('영화 요청이 접수되었습니다! 카카오페이 후원 페이지로 이동합니다.');
-                window.location.href = "https://qr.kakaopay.com/FPKyyZ36s";
+                alert('영화 요청이 접수되었습니다! 카카오페이 후원 페이지로 연결합니다.');
+                setRequestMovieTitle('');
+                setRequestMessage('');
+                setIsSubmitting(false);
+                setIsDonateOpen(false);
+
+                // 안드로이드/아이폰 기본 브라우저 강제 호출 스킴 적용
+                const targetUrl = "https://qr.kakaopay.com/FPKyyZ36s";
+                
+                // 모바일 웹뷰를 완벽히 탈출하기 위해 a태그 강제 클릭 방식 재조정
+                const anchor = document.createElement('a');
+                anchor.href = targetUrl;
+                anchor.setAttribute('target', '_system');
+                document.body.appendChild(anchor);
+                anchor.click();
+                document.body.removeChild(anchor);
+
+                // 만약 위가 안 먹힐 경우를 대비해 location 변경도 함께 처리
+                setTimeout(() => {
+                  window.location.href = targetUrl;
+                }, 300);
               }} 
               style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}
             >
