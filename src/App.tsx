@@ -815,6 +815,7 @@ export default function App() {
               <p style={{ margin: 0 }}>광고 클릭이나 따뜻한 기부가 서비스 지속에 큰 힘이 됩니다. 많은 애용 부탁드립니다!</p>
             </div>
 
+            {/* 1. 영화 요청 Form */}
             <form 
               onSubmit={(e) => {
                 e.preventDefault();
@@ -825,7 +826,6 @@ export default function App() {
 
                 setIsSubmitting(true);
 
-                // 구글 시트로 요청 전송
                 fetch(APPS_SCRIPT_URL, {
                   method: 'POST',
                   mode: 'no-cors',
@@ -836,33 +836,20 @@ export default function App() {
                     movieTitle: requestMovieTitle,
                     message: requestMessage,
                   }),
-                }).catch((err) => {
-                  console.error('요청 전송 실패:', err);
-                });
-
-                alert('영화 요청이 접수되었습니다! 카카오페이 후원 페이지로 연결합니다.');
-                setRequestMovieTitle('');
-                setRequestMessage('');
-                setIsSubmitting(false);
-                setIsDonateOpen(false);
-
-                // 안드로이드/아이폰 기본 브라우저 강제 호출 스킴 적용
-                const targetUrl = "https://qr.kakaopay.com/FPKyyZ36s";
-                
-                // 모바일 웹뷰를 완벽히 탈출하기 위해 a태그 강제 클릭 방식 재조정
-                const anchor = document.createElement('a');
-                anchor.href = targetUrl;
-                anchor.setAttribute('target', '_system');
-                document.body.appendChild(anchor);
-                anchor.click();
-                document.body.removeChild(anchor);
-
-                // 만약 위가 안 먹힐 경우를 대비해 location 변경도 함께 처리
-                setTimeout(() => {
-                  window.location.href = targetUrl;
-                }, 300);
+                })
+                  .then(() => {
+                    alert('영화 요청이 정상적으로 접수되었습니다!');
+                    setRequestMovieTitle('');
+                    setRequestMessage('');
+                    setIsSubmitting(false);
+                  })
+                  .catch((err) => {
+                    console.error('요청 전송 실패:', err);
+                    alert('전송 중 오류가 발생했습니다. 다시 시도해 주세요.');
+                    setIsSubmitting(false);
+                  });
               }} 
-              style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}
             >
               <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>🎬 원하는 영화/촬영지 요청하기</span>
               <input
@@ -882,21 +869,47 @@ export default function App() {
                 type="submit"
                 disabled={isSubmitting}
                 style={{ 
+                  background: '#1a73e8', 
+                  color: 'white', 
+                  border: 'none', 
+                  padding: '10px', 
+                  borderRadius: '8px', 
+                  fontSize: '12px', 
+                  fontWeight: 'bold', 
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}
+              >
+                {isSubmitting ? '전송 중...' : '영화 요청만 등록하기'}
+              </button>
+            </form>
+
+            <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '5px 0 15px 0' }} />
+
+            {/* 2. 카카오페이 후원 링크 (직접 터치 방식) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>💛 개발자 후원하기 (카카오페이)</span>
+              <a
+                href="https://qr.kakaopay.com/FPKyyZ36s"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ 
                   background: '#fee500', 
                   color: '#191919', 
-                  border: 'none', 
+                  textDecoration: 'none',
+                  textAlign: 'center',
                   padding: '12px', 
                   borderRadius: '8px', 
                   fontSize: '13px', 
                   fontWeight: 'bold', 
-                  cursor: 'pointer',
                   boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-                  marginTop: '4px'
+                  display: 'block'
                 }}
               >
-                {isSubmitting ? '처리 중...' : '💛 기부하고 요청 등록하기 🔗'}
-              </button>
-            </form>
+                ☕ 카카오페이로 후원하기 🔗
+              </a>
+            </div>
+
           </div>
         </div>
       )}
