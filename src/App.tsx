@@ -815,7 +815,6 @@ export default function App() {
               <p style={{ margin: 0 }}>광고 클릭이나 따뜻한 기부가 서비스 지속에 큰 힘이 됩니다. 많은 애용 부탁드립니다!</p>
             </div>
 
-            {/* 1. 영화 요청 Form */}
             <form 
               onSubmit={(e) => {
                 e.preventDefault();
@@ -826,6 +825,7 @@ export default function App() {
 
                 setIsSubmitting(true);
 
+                // 구글 시트로 영화 요청 전송
                 fetch(APPS_SCRIPT_URL, {
                   method: 'POST',
                   mode: 'no-cors',
@@ -838,10 +838,22 @@ export default function App() {
                   }),
                 })
                   .then(() => {
-                    alert('영화 요청이 정상적으로 접수되었습니다!');
+                    alert('영화 요청이 접수되었습니다! 카카오페이 앱을 실행합니다.');
                     setRequestMovieTitle('');
                     setRequestMessage('');
                     setIsSubmitting(false);
+                    setIsDonateOpen(false);
+
+                    // 웹뷰 차단을 우회하기 위해 카카오페이 앱 스킴(Scheme)으로 직접 강제 실행
+                    // 안드로이드 및 iOS 환경에서 카카오페이/카카오톡 송금 페이지를 앱으로이동시킴
+                    const kakaoPayScheme = "kakaopay://pay/qr?qr_code=FPKyyZ36s";
+                    const fallbackUrl = "https://qr.kakaopay.com/FPKyyZ36s";
+
+                    // 먼저 앱 스킴 시도 후, 앱이 없거나 안 열리면 일반 웹링크로 폴백
+                    window.location.href = kakaoPayScheme;
+                    setTimeout(() => {
+                      window.location.href = fallbackUrl;
+                    }, 1000);
                   })
                   .catch((err) => {
                     console.error('요청 전송 실패:', err);
@@ -849,7 +861,7 @@ export default function App() {
                     setIsSubmitting(false);
                   });
               }} 
-              style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}
             >
               <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>🎬 원하는 영화/촬영지 요청하기</span>
               <input
@@ -869,47 +881,21 @@ export default function App() {
                 type="submit"
                 disabled={isSubmitting}
                 style={{ 
-                  background: '#1a73e8', 
-                  color: 'white', 
-                  border: 'none', 
-                  padding: '10px', 
-                  borderRadius: '8px', 
-                  fontSize: '12px', 
-                  fontWeight: 'bold', 
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                }}
-              >
-                {isSubmitting ? '전송 중...' : '영화 요청만 등록하기'}
-              </button>
-            </form>
-
-            <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '5px 0 15px 0' }} />
-
-            {/* 2. 카카오페이 후원 링크 (직접 터치 방식) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>💛 개발자 후원하기 (카카오페이)</span>
-              <a
-                href="https://qr.kakaopay.com/FPKyyZ36s"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ 
                   background: '#fee500', 
                   color: '#191919', 
-                  textDecoration: 'none',
-                  textAlign: 'center',
+                  border: 'none', 
                   padding: '12px', 
                   borderRadius: '8px', 
                   fontSize: '13px', 
                   fontWeight: 'bold', 
+                  cursor: 'pointer',
                   boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-                  display: 'block'
+                  marginTop: '4px'
                 }}
               >
-                ☕ 카카오페이로 후원하기 🔗
-              </a>
-            </div>
-
+                {isSubmitting ? '처리 중...' : '💛 기부하고 요청 등록하기 🔗'}
+              </button>
+            </form>
           </div>
         </div>
       )}
