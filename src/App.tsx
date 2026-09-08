@@ -838,22 +838,21 @@ export default function App() {
                   }),
                 })
                   .then(() => {
-                    alert('영화 요청이 접수되었습니다! 카카오페이 앱을 실행합니다.');
+                    alert('영화 요청이 접수되었습니다! 카카오페이 후원창을 엽니다.');
                     setRequestMovieTitle('');
                     setRequestMessage('');
                     setIsSubmitting(false);
                     setIsDonateOpen(false);
 
-                    // 웹뷰 차단을 우회하기 위해 카카오페이 앱 스킴(Scheme)으로 직접 강제 실행
-                    // 안드로이드 및 iOS 환경에서 카카오페이/카카오톡 송금 페이지를 앱으로이동시킴
-                    const kakaoPayScheme = "kakaopay://pay/qr?qr_code=FPKyyZ36s";
+                    // 카카오톡/카카오페이 공식 송금 및 QR 연동 인텐트 스킴 적용
+                    // 최신 카카오페이 앱 스킴 규격으로 변경하여 "연결할 수 없는 화면" 오류 해결
+                    const kakaoPayScheme = "kakaotalk://kakaopay/money/to/qr?qr_code=FPKyyZ36s";
                     const fallbackUrl = "https://qr.kakaopay.com/FPKyyZ36s";
 
-                    // 먼저 앱 스킴 시도 후, 앱이 없거나 안 열리면 일반 웹링크로 폴백
                     window.location.href = kakaoPayScheme;
                     setTimeout(() => {
                       window.location.href = fallbackUrl;
-                    }, 1000);
+                    }, 1200);
                   })
                   .catch((err) => {
                     console.error('요청 전송 실패:', err);
