@@ -842,14 +842,9 @@ export default function App() {
                     setRequestMessage('');
                     setIsSubmitting(false);
                     setIsDonateOpen(false);
-                    // 요청 전송이 확실히 끝난 후 외부 브라우저 창으로 명시적 오픈
-                    const a = document.createElement('a');
-                    a.href = "https://qr.kakaopay.com/FPKyyZ36s";
-                    a.target = "_blank";
-                    a.rel = "noopener noreferrer";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
+                    
+                    // PWA 내부 웹뷰를 탈출하여 스마트폰 기본 브라우저로 강제 오픈
+                    window.open("https://qr.kakaopay.com/FPKyyZ36s", "_system");
                   })
                   .catch((err) => {
                     console.error('요청 전송 실패:', err);
