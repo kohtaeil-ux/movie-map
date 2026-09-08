@@ -671,13 +671,20 @@ export default function App() {
           {filteredItems.map((item) => {
             const isSelected = selectedMovie === item.MovieTitle;
 
-            // 각 영화/촬영지별 날짜가 오늘 기준 3일 이내인지 개별 판별
+            // 각 영화/촬영지별 날짜가 오늘 기준 3일 이내인지 개별 판별 (시간 오차 제거)
             let isRecentlyUpdated = false;
             if (item.Date) {
+              // 시트 날짜와 오늘 날짜의 시·분·초를 00:00:00으로 맞추어 일수만 비교
               const targetDate = new Date(item.Date);
-              const today = new Date(); // 현재 기준 날짜
+              targetDate.setHours(0, 0, 0, 0);
+
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+
               const diffTime = today.getTime() - targetDate.getTime();
               const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+              // 0일 이상 3일 이하인 경우 최신 업데이트로 판정
               isRecentlyUpdated = diffDays >= 0 && diffDays <= 3;
             }
 
