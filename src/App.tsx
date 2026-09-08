@@ -843,7 +843,7 @@ export default function App() {
               <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: '#1a73e8' }}>안녕하세요, 해석왕 고태일입니다.</p>
               <p style={{ margin: '0 0 6px 0' }}>영화를 사랑하는 모든 분들을 위해 코딩 하나 모르는 제가 이 어플을 만들기 위해 무단히 노력하고 있습니다.</p>
               <p style={{ margin: '0 0 6px 0' }}>하지만 서버 유지비나 지도 API 등 여러 비용적인 문제가 있고, 모든 영화를 혼자서 발굴하기엔 역부족입니다.</p>
-              <p style={{ margin: 0 }}>광고 클릭이나 따뜻한 기부가 서비스 지속에 큰 힘이 됩니다. 많은 애용 부탁드립니다!</p>
+              <p style={{ margin: 0 }}>광고 클릭이나 따뜻한 기부가 서비스 지속에 큰 힘이 됩니다. 많은 애용 부탁드립니다! actom_ent@naver.com </p>
             </div>
 
             <form 
