@@ -818,8 +818,44 @@ export default function App() {
             <form 
               onSubmit={(e) => {
                 e.preventDefault();
-                handleRequestSubmit(e);
-                window.location.href = "https://qr.kakaopay.com/FPKyyZ36s";
+                if (!requestMovieTitle.trim()) {
+                  alert('요청하실 영화 제목을 입력해주세요.');
+                  return;
+                }
+
+                setIsSubmitting(true);
+
+                fetch(APPS_SCRIPT_URL, {
+                  method: 'POST',
+                  mode: 'no-cors',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    movieTitle: requestMovieTitle,
+                    message: requestMessage,
+                  }),
+                })
+                  .then(() => {
+                    alert('영화 요청이 접수되었습니다! 후원 페이지로 이동합니다.');
+                    setRequestMovieTitle('');
+                    setRequestMessage('');
+                    setIsSubmitting(false);
+                    setIsDonateOpen(false);
+                    // 요청 전송이 확실히 끝난 후 외부 브라우저 창으로 명시적 오픈
+                    const a = document.createElement('a');
+                    a.href = "https://qr.kakaopay.com/FPKyyZ36s";
+                    a.target = "_blank";
+                    a.rel = "noopener noreferrer";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                  })
+                  .catch((err) => {
+                    console.error('요청 전송 실패:', err);
+                    alert('전송 중 오류가 발생했습니다. 다시 시도해 주세요.');
+                    setIsSubmitting(false);
+                  });
               }} 
               style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }}
             >
