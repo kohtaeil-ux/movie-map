@@ -675,7 +675,7 @@ export default function App() {
             let isRecentlyUpdated = false;
             if (item.Date) {
               const targetDate = new Date(item.Date);
-              const today = new Date('2026-09-08'); // 현재 기준 날짜
+              const today = new Date(); // 현재 기준 날짜
               const diffTime = today.getTime() - targetDate.getTime();
               const diffDays = diffTime / (1000 * 60 * 60 * 24);
               isRecentlyUpdated = diffDays >= 0 && diffDays <= 3;
